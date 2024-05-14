@@ -1,0 +1,47 @@
+---
+Resources:
+  WebServerOM:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow access on ports 80 and 22
+      GroupName: My Portfolio OM 
+      SecurityGroupIngress:
+        - IpProtocol: tcp 
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 196.10.113.18/32
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 196.10.113.18/32
+      Tags:
+        - Key: Name
+          Value: MyWebServer OM
+      VpcId: vpc-00104e266fdf5ee12
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      SubnetId: subnet-0df29a3117af00b18
+      SecurityGroupIds:
+       - !Ref WebServerOM
+      KeyName: Mathatho
+      ImageId: ami-04ff98ccbfa41c9ad
+      Tags:
+        - Key: Name 
+          Value: MywebServer
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -xe
+            sudo su
+            yum update -y
+            yum install -y httpd
+            cd /var/www/html
+            wget https://github.com/OwethuM/My-Personal-Portfolio/archive/refs/heads/main.zip
+            unzip main.zip
+            cp -r My-Personal-Portfolio-main/* /var/www/html/
+            rm -rf My-Personal-Portfolio-main main.zip
+            systemctl enable httpd 
+            systemctl start httpd
